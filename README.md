@@ -1,0 +1,1 @@
+# Failure-modes-and-load-bearing-capacity-prediction-for-CFST-columns-under-axial-compression

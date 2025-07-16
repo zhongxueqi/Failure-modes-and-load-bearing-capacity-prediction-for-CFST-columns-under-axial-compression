@@ -4,7 +4,7 @@
 This repository hosts a user-friendly web application for probabilistically predicting the failure modes and load-bearing capacities of Concrete-Filled Steel Tube (CFST) columns under axial compression. Built on advanced machine learning models, this tool provides engineers and researchers with uncertainty-aware predictions to support structural design and safety assessment.
 
 
-![Uploading 5.3 GUI.jpg…]()
+![Fig 1 GUI](https://github.com/user-attachments/assets/e44fd587-641c-4810-96da-3130f62d7958)
 
 *Figure 1: Web interface for probabilistic prediction of CFST columns.*
 

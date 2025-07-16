@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Structural Failure Prediction</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-result-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .result-column {
+            padding: 10px;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h3 {
+            color: #555;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        h4 {
+            color: #555;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 5px;
+        }
+        /* 修改列表样式为方块 */
+        .result-list {
+            list-style: square; /* 使用方块标记 */
+            padding-left: 25px; /* 增加左侧缩进，使方块更美观 */
+            margin-top: 5px;
+        }
+        .result-list li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Structural Failure Mode and Bearing Capacity Prediction</h2>
+    
+    <div class="form-result-container">
+        <form id="predictionForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="H">H (mm):</label>
+                    <input type="number" id="H" value="100" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="fy">fy (MPa):</label>
+                    <input type="number" id="fy" step="0.01" value="497" required>
+                </div>  
+
+                <div class="form-group">
+                    <label for="fck">fck (MPa):</label>
+                    <input type="number" id="fck" step="0.01" value="90" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="L_over_B">L/B ratio:</label>
+                    <input type="number" id="L_over_B" step="0.01" value="3" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="Asfy">As·fy (N):</label>
+                    <input type="number" id="Asfy" step="0.01" value="2295306" required>
+                </div>            
+
+                <div class="form-group">
+                    <label for="Acfck">Ac·fck (N):</label>
+                    <input type="number" id="Acfck" step="0.01" value="468115" required>
+                </div>            
+            </div>
+            
+            <button type="submit">Predict</button>
+        </form>
+        
+        <div id="result" class="result" style="display: none;">
+            <h3>Prediction Results</h3>
+            <div class="result-grid">
+                <div class="result-column">
+                    <h4>Failure Mode</h4>
+                    <p><strong>Predicted Mode:</strong> <span id="failureMode"></span></p>
+                    
+                    <p><strong>Mode Probabilities:</strong></p>
+                    <ul class="result-list">
+                        <li>Local Buckling Failure: <span id="prob0"></span></li>
+                        <li>Flexural Instability Failure: <span id="prob1"></span></li>
+                        <li>Combined Failure: <span id="prob2"></span></li>
+                    </ul>
+                </div>
+                
+                <div class="result-column">
+                    <h4>Load Bearing Capacity</h4>
+                    <p><strong>Predicted Value:</strong> <span id="capacity"></span> kN</p>
+                    
+                    <p><strong>Probability Distribution:</strong></p>
+                    <ul class="result-list">
+                        <li>Mean: <span id="capacityMean"></span> kN</li>
+                        <li>Standard Deviation: <span id="capacityStd"></span> kN</li>
+                        <li>95% Confidence Interval: <span id="capacityCI"></span> kN</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                H: document.getElementById('H').value,
+                L_over_B: document.getElementById('L_over_B').value,
+                fy: document.getElementById('fy').value,
+                fck: document.getElementById('fck').value,
+                Acfck: document.getElementById('Acfck').value,
+                Asfy: document.getElementById('Asfy').value
+            };
+            
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').style.display = 'block';
+                
+                const failureModes = [
+                    'Local Buckling Failure',
+                    'Flexural Instability Failure',
+                    'Combined Failure'
+                ];
+                
+                document.getElementById('failureMode').textContent = 
+                    failureModes[data.failure_mode];
+                    
+                document.getElementById('prob0').textContent = 
+                    (data.failure_probabilities['Failure=0'] * 100).toFixed(2) + '%';
+                document.getElementById('prob1').textContent = 
+                    (data.failure_probabilities['Failure=1'] * 100).toFixed(2) + '%';
+                document.getElementById('prob2').textContent = 
+                    (data.failure_probabilities['Failure=2'] * 100).toFixed(2) + '%';
+                
+                document.getElementById('capacity').textContent = 
+                    data.bearing_capacity.toFixed(2);
+                document.getElementById('capacityMean').textContent = 
+                    data.capacity_uncertainty.mean.toFixed(2);
+                document.getElementById('capacityStd').textContent = 
+                    data.capacity_uncertainty.std_dev.toFixed(2);
+                
+                const ci = data.capacity_uncertainty['95%_CI'];
+                document.getElementById('capacityCI').textContent = 
+                    `${ci[0].toFixed(2)} - ${ci[1].toFixed(2)}`;
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>

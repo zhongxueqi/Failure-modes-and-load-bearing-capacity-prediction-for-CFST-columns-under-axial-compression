@@ -30,11 +30,11 @@ def predict():
         data = request.json
         input_params = [
             float(data['H']),
-            float(data['L_over_B']),
             float(data['fy']),
             float(data['fck']),
-            float(data['Acfck']),
-            float(data['Asfy'])
+            float(data['L_over_B']),
+            float(data['Asfy']),            
+            float(data['Acfck'])            
         ]
         
         # 转换为模型所需格式
